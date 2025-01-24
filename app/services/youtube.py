@@ -25,23 +25,12 @@ if __name__ == "__main__":
     html_source = get_html_from_youtube(video_url)
     soup = BeautifulSoup(html_source, 'html.parser')
 
-    # 순차적으로 모든 노래 정보를 가져오기
-    index = 1  # nth-child 시작점
-    while True:
-        selector = f"#items > yt-video-attribute-view-model:nth-child({index}) > div > a > div.yt-video-attribute-view-model__metadata"
-        post = soup.select_one(selector)
-        
-        if post:
-            # 노래 제목 추출
-            song_title = post.find('h1', class_='yt-video-attribute-view-model__title').get_text(strip=True)
-            
-            # 가수 추출
-            artist = post.find('h4', class_='yt-video-attribute-view-model__subtitle').get_text(strip=True)
-            
-            print(f"{index}. {song_title} - {artist}")
-        else:
-            # 정보가 없으면 반복 중단
-            # print("더 이상 정보가 없습니다.")
-            break
-        
-        index += 1  # 다음 child로 이동
+    # 고정 댓글 부분의 span 요소 찾기
+    post = soup.select_one('#content-text > span')
+    if post:
+        lines = post.get_text().split("\n")  # 줄 단위로 분리 (strip=True 제거)
+        for line in lines:
+            if line.strip():  # 빈 줄 제거
+                print(line.strip())
+    else:
+        print("고정 댓글을 찾을 수 없습니다.")
