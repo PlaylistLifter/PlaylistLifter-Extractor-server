@@ -1,10 +1,11 @@
+# main.py
 from flask import Flask
+from communication import bp as communication_bp
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET'])
-def home():
-    return "Hello, World!"
+# Blueprint 등록
+app.register_blueprint(communication_bp)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
