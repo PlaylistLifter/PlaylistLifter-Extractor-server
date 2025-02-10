@@ -3,3 +3,5 @@ pytube
 requests
 pytest
 python-dotenv
+selenium
+beautifulsoup4
