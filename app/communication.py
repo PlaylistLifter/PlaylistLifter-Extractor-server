@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 from youtube import get_songs_from_youtube
+import requests
 import json
 
-bp = Blueprint('communication', __name__)
+bp = Blueprint('receive', __name__)
 
 @bp.route("/process-link", methods=["POST"])
 def process_link():
@@ -30,6 +31,9 @@ def process_link():
         # JSON을 예쁘게 포맷팅하여 출력
         print("\n=== 🎵 추출된 노래 목록 ===")
         print(json.dumps(response_data, indent=4, ensure_ascii=False))  # 예쁘게 포맷팅
+
+        send_response = requests.post("http://localhost:8080/api/songs/add", json=response_data["songs"])
+        print(f"Spring Boot Response: {send_response.status_code}, {send_response.text}")
 
         return jsonify(response_data), 200
 
