@@ -2,6 +2,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
 import re
+import gpt
 
 # 크롬드라이버 옵션 설정
 options = webdriver.ChromeOptions()
@@ -20,34 +21,7 @@ def get_html_from_youtube(video_url):
         driver.quit()
     return html_source
 
-# 댓글에서 가수와 노래 제목을 추출하는 함수
-def extract_songs_from_comments(comments):
-    artists = []
-    songs = []
-
-    for line in comments:
-        # 정규식을 이용하여 시간 포맷 제거 (00:00 or 00:00:00)
-        line = re.sub(r'\d{2}:\d{2}(:\d{2})?', '', line).strip()
-
-        if line:
-            try:
-                if "_" in line:  # 가수와 노래 구분자가 `_` 인 경우
-                    song, artist = line.split("_", 1)
-                elif "-" in line:  # 가수와 노래 구분자가 `-` 인 경우
-                    song, artist = line.split("-", 1)
-                else:
-                    continue  # `_`, `-`가 없는 경우(잡글) 무시
-                
-                # 리스트에 추가
-                artists.append(artist.strip())
-                songs.append(song.strip())
-
-            except ValueError:  # 예외 처리
-                print(f"파싱 오류 발생: {line}")
-
-    return list(zip(artists, songs))
-
-# 유튜브 링크를 받아서 가수와 노래 제목을 추출하는 메인 함수
+# 🎵 유튜브 댓글을 가져와서 GPT로 노래 추출
 def get_songs_from_youtube(video_url):
     html_source = get_html_from_youtube(video_url)
     soup = BeautifulSoup(html_source, 'html.parser')
@@ -57,7 +31,9 @@ def get_songs_from_youtube(video_url):
 
     if post:
         lines = post.get_text().split("\n")  # 줄 단위로 분리
-        songs_list = extract_songs_from_comments(lines)
+
+        # gpt.py의 `extract_songs` 함수 호출하여 노래 목록 추출
+        songs_list = gpt.extract_songs(lines)  
 
         return songs_list  # (가수, 노래 제목) 리스트 반환
     else:
