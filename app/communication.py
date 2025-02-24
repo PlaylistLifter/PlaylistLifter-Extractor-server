@@ -32,7 +32,8 @@ def process_link():
         print("\n=== 🎵 추출된 노래 목록 ===")
         print(json.dumps(response_data, indent=4, ensure_ascii=False))  # 예쁘게 포맷팅
 
-        send_response = requests.post("http://localhost:8080/api/songs/add", json=response_data["songs"])
+        # 보내는 코드
+        send_response = requests.post("http://localhost:8080/api/songs/add", json=response_data["songs"]) 
         print(f"Spring Boot Response: {send_response.status_code}, {send_response.text}")
 
         return jsonify(response_data), 200
