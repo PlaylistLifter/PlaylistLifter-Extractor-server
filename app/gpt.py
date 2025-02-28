@@ -16,7 +16,7 @@ def extract_songs(comments):
     comment_text = "\n".join(comments)  # 여러 줄의 댓글을 하나의 문자열로 변환
 
     prompt = f"""
-    다음은 유튜브 영상의 댓글들입니다:
+    다음은 유튜브 영상의 고정 댓글글입니다:
 
     {comment_text}
 

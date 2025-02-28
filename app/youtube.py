@@ -21,20 +21,25 @@ def get_html_from_youtube(video_url):
         driver.quit()
     return html_source
 
-# 🎵 유튜브 댓글을 가져와서 GPT로 노래 추출
+# 유튜브 댓글을 가져와서 GPT로 노래 추출
+# 여기서 유튜브 영상 제목도 가져옴
 def get_songs_from_youtube(video_url):
     html_source = get_html_from_youtube(video_url)
     soup = BeautifulSoup(html_source, 'html.parser')
 
     # 고정 댓글 부분의 span 요소 찾기
     post = soup.select_one('#content-text > span')
+    
+    # 유튜브 영상 제목 찾기
+    youtubetitle = soup.select_one('#title > h1 > yt-formatted-string')
+    youtubetitle = youtubetitle.get_text()
 
     if post:
         lines = post.get_text().split("\n")  # 줄 단위로 분리
-
+        print(lines)
         # gpt.py의 `extract_songs` 함수 호출하여 노래 목록 추출
         songs_list = gpt.extract_songs(lines)  
 
-        return songs_list  # (가수, 노래 제목) 리스트 반환
+        return youtubetitle, songs_list  # (가수, 노래 제목) 리스트 반환
     else:
-        return []  # 댓글에서 노래를 찾지 못한 경우 빈 리스트 반환
+        return youtubetitle, []  # 댓글에서 노래를 찾지 못한 경우 빈 리스트 반환
