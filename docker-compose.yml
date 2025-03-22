@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  matcher-server:
+    build:
+      context: ./PlayistLifter-Matcher-Server
+      dockerfile: Dockerfile
+    container_name: playlist-matcher
+    ports:
+      - "8080:8080"
+    networks:
+      - playlist-network
+    restart: unless-stopped
+    env_file:
+      - ./PlayistLifter-Matcher-Server/.env
+    environment:
+      - SPRING_APPLICATION_NAME=Matcher
+      - SPRING_AUTOCONFIGURE_EXCLUDE=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - PYTHON_SERVER_URL=http://extractor-server:5001
+    depends_on:
+      - extractor-server
+
+  extractor-server:
+    build:
+      context: ./PlaylistLifter-Extractor-Server
+      dockerfile: Dockerfile
+    container_name: playlist-extractor
+    ports:
+      - "5001:5001"
+    networks:
+      - playlist-network
+    restart: unless-stopped
+    env_file:
+      - ./PlaylistLifter-Extractor-Server/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DISPLAY=:99
+    volumes:
+      - /dev/shm:/dev/shm  # Shared memory for Chrome
+    # Required permissions for Selenium
+    cap_add:
+      - SYS_ADMIN
+    shm_size: 2g  # Allocate sufficient shared memory for Selenium
+
+networks:
+  playlist-network:
+    driver: bridge
