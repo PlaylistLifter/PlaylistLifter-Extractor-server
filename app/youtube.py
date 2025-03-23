@@ -1,45 +1,65 @@
-from selenium import webdriver
+from googleapiclient.discovery import build
 from bs4 import BeautifulSoup
-import time
-import re
+from dotenv import load_dotenv
+import os
 import gpt
 
-# 크롬드라이버 옵션 설정
-options = webdriver.ChromeOptions()
-options.add_argument('--headless')  # 브라우저 UI 없이 실행
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
+# .env 파일에서 API 키 로드
+load_dotenv()
+API_KEY = os.getenv("YOUTUBE_API_KEY")
 
-# 유튜브 HTML 소스 가져오기 함수
-def get_html_from_youtube(video_url):
-    driver = webdriver.Chrome(options=options)
-    try:
-        driver.get(video_url)
-        time.sleep(3)  # 페이지 로딩 대기
-        html_source = driver.page_source
-    finally:
-        driver.quit()
-    return html_source
+# YouTube API 빌드
+YOUTUBE = build("youtube", "v3", developerKey=API_KEY)
 
-# 유튜브 댓글을 가져와서 GPT로 노래 추출
-# 여기서 유튜브 영상 제목도 가져옴
+# 유튜브 영상 ID 추출
+def get_video_id(video_url):
+    if "watch?v=" not in video_url:
+        return None
+    start = video_url.find("watch?v=") + len("watch?v=")
+    return video_url[start:start+11]
+
+# 고정 댓글 가져오기
+def get_pinned_comment(video_id):
+    request = YOUTUBE.commentThreads().list(
+        part="snippet",
+        videoId=video_id,
+        maxResults=1,
+        order="relevance"
+    )
+    response = request.execute()
+    items = response.get("items", [])
+    if not items:
+        return None
+
+    raw_comment = items[0]["snippet"]["topLevelComment"]["snippet"]["textOriginal"]
+    clean_comment = BeautifulSoup(raw_comment, "html.parser").get_text()
+    return clean_comment
+
+# 영상 제목 가져오기
+def get_video_title(video_id):
+    request = YOUTUBE.videos().list(
+        part="snippet",
+        id=video_id
+    )
+    response = request.execute()
+    items = response.get("items", [])
+    if not items:
+        return "제목 없음"
+    return items[0]["snippet"]["title"]
+
+# 통합 함수: 영상 제목 + 고정 댓글 기반 노래 리스트 추출
 def get_songs_from_youtube(video_url):
-    html_source = get_html_from_youtube(video_url)
-    soup = BeautifulSoup(html_source, 'html.parser')
+    video_id = get_video_id(video_url)
+    if not video_id:
+        return "영상 ID 없음", []
 
-    # 고정 댓글 부분의 span 요소 찾기
-    post = soup.select_one('#content-text > span')
-    
-    # 유튜브 영상 제목 찾기
-    youtubetitle = soup.select_one('#title > h1 > yt-formatted-string')
-    youtubetitle = youtubetitle.get_text()
+    title = get_video_title(video_id)
+    comment = get_pinned_comment(video_id)
 
-    if post:
-        lines = post.get_text().split("\n")  # 줄 단위로 분리
-        print(lines)
-        # gpt.py의 `extract_songs` 함수 호출하여 노래 목록 추출
-        songs_list = gpt.extract_songs(lines)  
-
-        return youtubetitle, songs_list  # (가수, 노래 제목) 리스트 반환
+    if comment:
+        lines = comment.split("\n")
+        print(lines)  # 디버깅 용도
+        songs_list = gpt.extract_songs(lines)
+        return title, songs_list
     else:
-        return youtubetitle, []  # 댓글에서 노래를 찾지 못한 경우 빈 리스트 반환
+        return title, []
