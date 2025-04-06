@@ -18,7 +18,7 @@ def process_link():
         youtube_url = data["youtubeUrl"]
         print(f"Received YouTube URL: {youtube_url}")
 
-        # 유튜브 댓글에서 노래, 유튜브 영상 제목목 추출
+        # 유튜브 댓글에서 노래, 유튜브 영상 제목 추출
         youtubetitle, songs_list = get_songs_from_youtube(youtube_url)
         print(youtubetitle, songs_list)
         response_data = {

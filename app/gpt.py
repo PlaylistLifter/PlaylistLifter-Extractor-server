@@ -16,13 +16,13 @@ def extract_songs(comments):
     comment_text = "\n".join(comments)  # 여러 줄의 댓글을 하나의 문자열로 변환
 
     prompt = f"""
-    다음은 유튜브 영상의 고정 댓글글입니다:
+    다음은 유튜브 영상의 고정 댓글과 설명란에 있는 내용용입니다:
 
     {comment_text}
 
-    이 댓글을 분석하여 **노래 제목과 가수 정보**를 추출해 주세요.
-    노래제목 - 가수 형태로 추출해 주세요.
-    출력 형식은 **아무런 추가 설명 없이** 다음 형식으로만 출력하세요.
+    이 내용을 분석하여 해당 유튜브 영상의 노래 제목과 가수 정보를 추출해 주세요.
+    노래제목 - 가수 형식으로 추출해 주세요.
+    출력 형식은 아무런 추가 설명 없이 다음 형식으로만 출력하세요.
     노래 전부 정확하게 추출해 주세요. 검토도 해주세요.
 
     예시:
@@ -48,7 +48,7 @@ def extract_songs(comments):
 
     for song_info in extracted_songs:
         if " - " in song_info:
-            song, artist = song_info.rsplit(" - ", 1)  # 마지막 `-` 기준으로 가수와 노래 제목 분리
+            song, artist = song_info.rsplit(" - ", 1)  # 마지막 - 기준으로 가수와 노래 제목 분리
             artists.append(artist.strip())
             songs.append(song.strip())
 
