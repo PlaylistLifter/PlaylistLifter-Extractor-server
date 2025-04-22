@@ -32,7 +32,7 @@ def process_link():
         print(json.dumps(response_data, indent=4, ensure_ascii=False))  # 예쁘게 포맷팅
 
         # 보내는 코드
-        send_response = requests.post("http://localhost:8080/api/playlist/add", json=response_data) 
+        send_response = requests.post("http://matcher-server:8080/api/playlist/add", json=response_data)
         print(f"Spring Boot Response: {send_response.status_code}, {send_response.text}")
 
         return jsonify(response_data), 200

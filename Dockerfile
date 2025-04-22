@@ -16,4 +16,4 @@ COPY . /app
 EXPOSE 5001
 
 # 6. 컨테이너 실행 시 Flask 서버를 실행
-CMD ["python", "main.py"]
+CMD ["python", "app/main.py"]
