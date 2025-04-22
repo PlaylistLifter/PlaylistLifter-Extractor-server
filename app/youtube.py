@@ -47,7 +47,22 @@ def get_video_title(video_id):
         return "제목 없음"
     return items[0]["snippet"]["title"]
 
-# 통합 함수: 영상 제목 + 고정 댓글 기반 노래 리스트 추출
+# 설명란(description) 가져오기
+def get_script(video_id):
+    request = YOUTUBE.videos().list(
+        part="snippet",
+        id=video_id
+    )
+    response = request.execute()
+    items = response.get("items", [])
+    if not items:
+        return None
+
+    raw_description = items[0]["snippet"]["description"]
+    clean_description = BeautifulSoup(raw_description, "html.parser").get_text()
+    return clean_description
+
+
 def get_songs_from_youtube(video_url):
     video_id = get_video_id(video_url)
     if not video_id:
@@ -55,11 +70,19 @@ def get_songs_from_youtube(video_url):
 
     title = get_video_title(video_id)
     comment = get_pinned_comment(video_id)
+    script = get_script(video_id)
+
+    # 설명란과 댓글을 합쳐서 한 번에 넘기기
+    combined_lines = []
 
     if comment:
-        lines = comment.split("\n")
-        print(lines)  # 디버깅 용도
-        songs_list = gpt.extract_songs(lines)
+        combined_lines.append("고정 댓글:\n" + comment)
+    if script:
+        combined_lines.append("설명란:\n" + script)
+
+    if combined_lines:
+        songs_list = gpt.extract_songs(combined_lines)
         return title, songs_list
     else:
         return title, []
+

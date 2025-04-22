@@ -18,7 +18,7 @@ def process_link():
         youtube_url = data["youtubeUrl"]
         print(f"Received YouTube URL: {youtube_url}")
 
-        # 유튜브 댓글에서 노래, 유튜브 영상 제목목 추출
+        # 유튜브 댓글에서 노래, 유튜브 영상 제목 추출
         youtubetitle, songs_list = get_songs_from_youtube(youtube_url)
         print(youtubetitle, songs_list)
         response_data = {
@@ -32,7 +32,7 @@ def process_link():
         print(json.dumps(response_data, indent=4, ensure_ascii=False))  # 예쁘게 포맷팅
 
         # 보내는 코드
-        send_response = requests.post("http://localhost:8080/api/playlist/add", json=response_data) 
+        send_response = requests.post("http://matcher-server:8080/api/playlist/add", json=response_data)
         print(f"Spring Boot Response: {send_response.status_code}, {send_response.text}")
 
         return jsonify(response_data), 200
